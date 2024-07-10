@@ -35,20 +35,19 @@ var ballRotation = 0;
 var rotationSpeed = 0;
 var rotationDamping = 0.99; // Damping factor to slow down rotation
 var game = {
-    state: 'loading', // loading, ready, first_half, halftime, second_half, over
+    state: 'loading', // loading, ready, first_half, over
     background: 'transparent',
     dayColor: 'white',
     nightColor: 'black',
     gravity: 0,
     friction: 0,
     juggle: 0,
-    scoreRight: 0,
-    scoreLeft: 0,
+    score: 0,
     highscore: 0,
     highscoreEver: 0,
-    triesInitial: 2,
-    tries: 2,
-    firstTry: true,
+    triesInitial: 1, // Only one try
+    tries: 1,
+    onlyFirstTry: true,
     floorTouched: false,
     ballHit: false,
     emittActive: false,
@@ -61,8 +60,14 @@ var game = {
         color: 'white',
         background: 'black'
     },
-    luckyBall: 'RIGHT IS YOUR LUCKY BALL.',
-    ceiling: 80
+    message: [
+              "OOPS! Let's try again",
+              "Skillful!",
+              "You're doing great!"
+            ],
+    ceiling: 80,
+    gameStarted: false,
+    interactionEnabled: false
 };
 
 var spike = {
@@ -75,7 +80,7 @@ var spike = {
     posYFalling: 0,
     falling: false,
     speedModifier: 10, // 1 is fastest 10 is slowest
-    tick: 5000 // Tick as lower and lower, time for the spikes fall is faster and shorter
+    tick: 4600 // Tick as lower and lower, time for the spikes fall is faster and shorter
 }
 
 var ballData = {
@@ -92,38 +97,29 @@ var ballData = {
 };
 
 var ballImage = new Image();
-ballImage.src = './images/football-no-background.png';
+ballImage.src = 'football-no-background.png';
 
 function init(){
-    canvas = document.createElement('canvas');
+    canvas = document.getElementById('gameCanvas');
     context = canvas.getContext('2d');
-
-    // Setup canvas data
-    // canvasW = canvas.width = 640;
-    // canvasH = canvas.height = 960;
-    // canvasCX = canvasW / 2;
-    // canvasCY = canvasH / 2;
-    // canvas.style.width = '320px';
-    // canvas.style.height = '480px';
-    // canvas.style.background = game.background;
-    // spike.count = canvasW / spike.width - 1;
-
-    // Setup canvas dimensions
-    resizeCanvas();
 
     // Add canvas to body
     document.body.appendChild(canvas);
+
+    // Setup canvas dimensions
+    resizeCanvas();
 
     // Set ball spawn position
     ballPositionSpawn();
 
     // Init mousedown listener
-    canvas.addEventListener('mousedown', function(e){
+    canvas.addEventListener('pointerdown', function(e) {
+        e.preventDefault();
         cursorData = getCursorPosition(this, e);
-
         updateGameState();
-
-        handlejuggle(cursorData);
+        if (game.gameStarted && game.interactionEnabled) {
+            handlejuggle(cursorData);
+        }
     });
 
     // Add resize listener
@@ -133,11 +129,15 @@ function init(){
     animate();
 }
 
+//Updated part - resize Canvas function
 function resizeCanvas() {
     var oldCanvasW = canvasW;
     var oldCanvasH = canvasH;
 
-    canvas.width = window.innerWidth;
+    let sidebar = document.querySelector('.sidebar');
+    let sidebarWidth = sidebar.classList.contains('active') ? 240 : 78;
+
+    canvas.width = window.innerWidth - sidebarWidth;
     canvas.height = window.innerHeight;
     canvasW = canvas.width;
     canvasH = canvas.height;
@@ -154,26 +154,28 @@ function resizeCanvas() {
 }
 
 function scalePhysics() {
-    var scaleFactor = Math.min(canvasW / 800, canvasH / 1200);
+    var scaleFactor = Math.min(canvasW / 768, canvasH / 1366);
     if (canvasW <= 480) {
-        game.gravity = 1.2 * scaleFactor;
-        game.friction = 0.005 * scaleFactor;
+        game.gravity = 1.3 * scaleFactor;
+        game.friction = 0.009 * scaleFactor;
     } else if (canvasW <= 720) {
-        game.gravity = 0.95 * scaleFactor;
-        game.friction = 0.0095 * scaleFactor;
+        game.gravity = 1.35 * scaleFactor;
+        game.friction = 0.0094 * scaleFactor;
+    } else if (canvasW <= 960) {
+        game.gravity = 1.1 * scaleFactor;
+        game.friction = 0.0097 * scaleFactor;
     } else {
-        game.gravity = 0.85 * scaleFactor;
+        game.gravity = 1 * scaleFactor;
         game.friction = 0.01 * scaleFactor;
     }
 }
 
 function animate() {
+    requestAnimationFrame(animate);
     var now = Date.now();
     var dt = now - lastUpdate;
     lastUpdate = now;
-
     render(dt);
-    requestAnimationFrame(animate);
 }
 
 // Main game loop where all data is updated
@@ -189,7 +191,7 @@ function render(dt) {
 
     // update spikes and falling spike
     drawBall(dt);
-
+    
     if(game.ballHit && game.tries > 0 && game.tries < game.triesInitial) {
         popupRender('hit');
     }
@@ -209,8 +211,7 @@ function gameReset(){
     juggleReset();
     highscoreReset();
     rotationSpeed = 0;
-    game.scoreRight = 0;
-    game.scoreLeft = 0;
+    game.score = 0;
     resetSpikeSpeedAndTick();
 }
 
@@ -261,16 +262,16 @@ function adjustSpikeSpeedAndTick() {
     const juggleCount = game.juggle;
     
     if (juggleCount % 10 === 0) {
-        spike.speedModifier = Math.max(1, spike.speedModifier - 0.25);
+        spike.speedModifier = Math.max(1, spike.speedModifier - 0.5);
         spike.tick = Math.max(1000, spike.tick - 200);
     }
-    console.log(spike.speedModifier + ", " + spike.tick);
+    console.log("Speed: " + spike.speedModifier + ", Tick: " + spike.tick);
 }
 
 // Reset spike speedModifier and tick to defaults
 function resetSpikeSpeedAndTick() {
     spike.speedModifier = 10;
-    spike.tick = 5000;
+    spike.tick = 4600;
 }
 
 // Ball draw function
@@ -311,8 +312,9 @@ function drawBall(dt){
     }
 
     // Y Axis update
-    if(ballData.velY < ballData.velMax) ballData.velY += game.gravity;
-
+    if(ballData.velY < ballData.velMax) {
+        ballData.velY += game.gravity;
+    }
     // keep falling until floor touched
     if (ballData.posY + ballData.velY + ballData.radius < canvasH) {
         ballData.posY += ballData.velY + dt * 0.1;
@@ -348,35 +350,36 @@ function drawBall(dt){
 
 // Update game state transitions
 function updateGameState() {
-    if(game.state == 'ready') {
+    if (game.state == 'ready') {
         game.state = 'first_half';
         setSpikeInterval();
         game.emittActive = true;
+        game.gameStarted = true; // Set the flag to true when the game starts
+
+        // Delay interaction with the ball to prevent immediate juggle
+        setTimeout(() => {
+            game.interactionEnabled = true;
+        }, 200); // 200 milliseconds delay
     }
 
-    if(game.state == 'halftime') {
-        game.state = 'second_half';
-        setSpikeInterval();
-        game.ballHit = false;
-        game.emittActive = true;
-    }
-
-    if(game.state == 'over') {
+    if (game.state == 'over') {
         gameReset();
         game.state = 'ready';
         game.emittActive = false;
+        game.gameStarted = false; // Reset the flag when the game is over
+        game.interactionEnabled = false; // Disable interaction
     }
 }
 
 // Spike movement and reset
 function drawSpikes(dt) {
     // update falling spike velocity
-    if(spike.falling &&  (game.state == 'first_half' || game.state == 'second_half') ) {
+    if(spike.falling && game.state == 'first_half') {
         spike.velY += game.gravity / spike.speedModifier * (dt * 0.1);
     }
 
     // update falling spike number after emitt
-    if(game.emittSpike &&  (game.state == 'first_half' || game.state == 'second_half') ) {
+    if(game.emittSpike && game.state == 'first_half') {
         game.emittSpike = false;
         spike.falling = true;
         spike.randomNum = Math.floor(ballData.posX / spike.width);
@@ -396,7 +399,7 @@ function drawSpikes(dt) {
             ||  posXFalling > ballData.posX + ballRadius
             ||  posYFalling < ballData.posY - ballRadius
             ||  posYFalling > ballData.posY + ballRadius)) {
-                if(game.state == 'first_half' || game.state == 'second_half') {
+                if(game.state == 'first_half') {
                     spike.posYFalling = posYFalling + spike.velY;
                 }
                 else {
@@ -404,19 +407,14 @@ function drawSpikes(dt) {
                 }
             }
             else {
-                if((game.state == 'first_half' || game.state == 'second_half')
+                if((game.state == 'first_half')
                 && posYFalling > ballData.posY - ballRadius
                 && posYFalling < ballData.posY + ballRadius
                 && posYFalling < canvasH - spike.height) {
                     game.ballHit = true;
                     juggleReset();
                     ballWasHit();
-                    if(game.state == 'first_half') {
-                        game.state = 'halftime';
-                    }
-                    else if (game.state == 'second_half'){
-                        game.state = 'over';
-                    }
+                    game.state = 'over';
                 }
                 spike.posYFalling = spike.posYStart;
                 spike.velY = 0;
@@ -428,16 +426,10 @@ function drawSpikes(dt) {
 }
 
 function ballHitStateUpdate() {
-    if(game.state == 'first_half' || game.state == 'second_half') {
+    if (game.state == 'first_half') {
         game.ballHit = true;
         ballWasHit();
-
-        if(game.state == 'first_half') {
-            game.state = 'halftime';
-        }
-        else if (game.state == 'second_half') {
-            game.state = 'over';
-        }
+        game.state = 'over';
     }
 }
 
@@ -450,8 +442,8 @@ function ballWasHit() {
     spike.velY = 0;
     spike.posYFalling = spike.posYStart;
 
-    // Reset speedModifier and tick if first_half failed
-    if (game.state == 'first_half') {
+    // Reset speedModifier and tick if the game is over
+    if (game.state == 'first_half' || game.state == 'over') {
         resetSpikeSpeedAndTick();
     }
 }
@@ -477,18 +469,11 @@ function juggleRender() {
     context.font = scaleFontSize(22) + 'px Pusab, sans-serif' ;
     context.fillStyle = game.scoreBoard.color;
     context.textAlign = 'left';
-    context.fillText('JUGGLES: ' + game.juggle, scaleValue(10), scaleValue(25));
+    context.fillText('JUGGLES: ' + game.juggle, scaleValue(10), scaleValue(26));
 }
 
 function juggleIncrement() {
-    // Update conditions to increase the difficulty of game here
     game.juggle += 1;
-    if(game.firstTry) {
-        game.scoreRight += 1;
-    }
-    else {
-        game.scoreLeft += 1;
-    }
 }
 
 function juggleReset() {
@@ -499,15 +484,26 @@ function juggleReset() {
         game.highscoreEver = game.juggle;
     }
     game.juggle = 0;
-    spike.speedModifier = 10;
+    resetSpikeSpeedAndTick();
 }
 
-function triesRender() {
+function currentBallEarned() {
+    let reward = 0;
+    let increment = 0.01;
+    for (let i = 1; i <= game.juggle; i++) {
+        reward += increment;
+        if (i % 10 === 0) {
+            increment += 0.01;
+        }
+    }
+    return reward.toFixed(2);
+}
+
+function highscoreRender() {
     context.font = scaleFontSize(22) + 'px Pusab, sans-serif';
     context.textAlign = 'right';
     context.fillStyle = game.scoreBoard.color;
-    var runsLeft = (game.tries != 1) ? 'RIGHT BALL' : 'LEFT BALL';
-    context.fillText(runsLeft, canvasW - scaleValue(10), scaleValue(25));
+    context.fillText("BEST: " + game.highscoreEver, canvasW - scaleValue(10), scaleValue(26));
 }
 
 function triesDecrement() {
@@ -522,11 +518,12 @@ function triesReset() {
     game.tries = game.triesInitial;
 }
 
-function highscoreRender() {
+function totalBallEarnedRender() {
     context.font = scaleFontSize(22) + 'px Pusab, sans-serif';
     context.textAlign = 'center';
     context.fillStyle = game.scoreBoard.color;
-    context.fillText('BEST: ' + game.highscoreEver, canvasCX, scaleValue(25));
+    currentBallEarned();
+    context.fillText('BALL EARNED: ' + currentBallEarned(), canvasCX, scaleValue(26));
 }
 
 function highscoreReset() {
@@ -537,7 +534,7 @@ function scoreBoardRender() {
     context.fillStyle = game.scoreBoard.background;
     context.fillRect(0, 0, canvasW, scaleValue(40));
     juggleRender();
-    triesRender();
+    totalBallEarnedRender();
     highscoreRender();
 }
 
@@ -550,9 +547,6 @@ function popupRender(type) {
         case 'restart':
             popupDrawRestart();
             break;
-        case 'hit':
-            popupDrawNextTry();
-            break;
     }
 }
 
@@ -562,51 +556,34 @@ function popupDrawStart() {
     setDayNight('day');
     context.fillStyle = game.dayColor;
     context.fillRect(0, 0, canvasW, canvasH);
-    context.font = 'bold ' + scaleValue(52) + 'px Pusab, sans-serif';
+    context.font = 'bold ' + scaleValue(64) + 'px Pusab, sans-serif';
     context.fillStyle = game.nightColor;
     context.textAlign = 'center';
     context.fillText('BALL JUGGLING', canvasCX, canvasCY - scaleValue(120));
-    context.font = 'bold ' + scaleFontSize(28) + 'px Pusab, sans-serif';
-    context.fillText('LET TRY YOUR SKILLS!', canvasCX, canvasCY - scaleValue(80));
-    context.font = 'bold ' + scaleFontSize(32) + 'px Pusab, sans-serif';
-    context.fillText('CLICK TO START', canvasCX, canvasCY + scaleValue(100));
+    context.font = 'bold ' + scaleFontSize(34) + 'px Pusab, sans-serif';
+    context.fillText('LET TRY YOUR SKILLS!', canvasCX, canvasCY - scaleValue(70));
+    context.font = 'bold ' + scaleFontSize(34) + 'px Pusab, sans-serif';
+    context.fillText('TAP TO START', canvasCX, canvasCY + scaleValue(120));
 }
 
 function popupDrawRestart() {
     rotationSpeed = 0;
-    if(game.scoreLeft > game.scoreRight) {
-        game.luckyBall = 'LEFT IS YOUR LUCKY BALL!';
-    }
-    else if(game.scoreLeft === game.scoreRight) {
-        game.luckyBall = 'YOUR BALLS ARE EQUALLY LUCKY.';
-    }
     context.fillStyle = game.nightColor;
     context.fillRect(0, 0, canvasW, canvasH);
-    context.font = scaleFontSize(36) + 'px Pusab, sans-serif';
+    context.font = scaleFontSize(48) + 'px Pusab, sans-serif';
     context.fillStyle = game.dayColor;
     context.textAlign = 'center';
-    context.fillText('YOUR LUCKY BALL DID', canvasCX, canvasCY - scaleValue(120));
+    context.fillText('YOU DID', canvasCX, canvasCY - scaleValue(120));
     context.font = 'bold ' + scaleFontSize(48) + 'px Pusab, sans-serif';
     var s = (game.highscore === 1 || 0) ? '' : 'S';
     context.fillText(game.highscore + ' JUGGLE'+ s +'!', canvasCX, canvasCY - scaleValue(80));
     context.font = scaleFontSize(32) + 'px Pusab, sans-serif';
-    context.fillText(game.luckyBall, canvasCX, canvasCY);
+    context.fillText(game.message, canvasCX, canvasCY);
     context.font = scaleFontSize(32) + 'px Pusab, sans-serif';
     context.fillText('GAME OVER.', canvasCX, canvasCY + scaleValue(100));
     context.fillText('CLICK TO RETRY.', canvasCX, canvasCY + scaleValue(140));
-    game.firstTry = true;
-    game.luckyBall = 'RIGHT IS YOUR LUCKY BALL!';
-}
-
-function popupDrawNextTry() {
-    game.firstTry = false;
-    setDayNight('night');
-    context.font = scaleValue(24) + 'px Pusab, sans-serif';
-    context.fillStyle = game.dayColor;
-    context.textAlign = 'center';
-    context.fillText('OOPS! LOST RIGHT BALL.', canvasCX, scaleValue(250));
-    context.fillText('TIME FOR LEFT BALL.', canvasCX, scaleValue(280));
-    context.fillText('KEEP CLICKING YOUR BALL!!!', canvasCX, scaleValue(310));
+    game.onlyFirstTry = true;
+    game.message = getRandomMessage(game.juggle);
 }
 
 // Reversing scene colors
@@ -690,4 +667,22 @@ function scaleValue(value) {
 function scaleFontSize(value) {
     var scaleFactor = Math.min(canvasW / 640, canvasH / 960);
     return value * scaleFactor;
+}
+
+function getRandomMessage() {
+    let currentMessage;
+    if (game.juggle <= 50) {
+        currentMessage = [
+            "OOPS! Let's try again"
+        ];
+    } else if (game.juggle <= 100) {
+        currentMessage = [
+            "You're doing great!"
+        ]
+    } else {
+        currentMessage = [
+            "Skillful!"
+        ]
+    }
+    return currentMessage;
 }

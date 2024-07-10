@@ -218,20 +218,15 @@ body {
 .sidebar.active .profile #log_out {
     background: none;
 }
-.home_content {
+#gameCanvas {
     position: absolute;
-    height: 100%;
-    width: calc(100% - 78px);
+    top: 0;
     left: 78px;
+    width: calc(100% - 78px);
+    height: 100%;
     transition: all 0.5s ease;
 }
-.home_content .text {
-    font-size: 25px;
-    font-weight: 500;
-    color: #1d1b31;
-    margin: 12px;
-}
-.sidebar.active ~ .home_content {
+.sidebar.active ~ #gameCanvas {
     width: calc(100% - 240px);
     left: 240px;
 }

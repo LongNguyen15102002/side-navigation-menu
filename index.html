@@ -9,7 +9,7 @@
     <!-- Boxicons CDN Link -->
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 </head>
-<body>
+<body onload="init();">
     <div class="sidebar">
         <div class="logo_content">
             <div class="logo">
@@ -94,10 +94,9 @@
             </div>
         </div>
     </div>
-    <div class="home_content">
-        <div class="text">Home Content</div>
-    </div>
+        <canvas id="gameCanvas"></canvas>
 
+    <script src="game.js"></script>
     <script>
         let btn = document.querySelector("#btn");
         let sidebar = document.querySelector(".sidebar");
@@ -105,11 +104,12 @@
 
         btn.onclick = function() {
             sidebar.classList.toggle("active");
+            resizeCanvas();
         }
         searchBtn.onclick = function() {
             sidebar.classList.toggle("active");
+            resizeCanvas();
         }
-
     </script>
 </body>
 </html>
