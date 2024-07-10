@@ -1,115 +1,128 @@
 <!DOCTYPE html>
-<!-- Designed by Long Nguyen -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Responsive Sidebar Menu | LongNguyen</title>
-    <link rel="stylesheet" href="styles.css">
-    <!-- Boxicons CDN Link -->
+    <title>Dashboard Sidebar Menu | Dark-Light Mode</title>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="styles.css">
 </head>
-<body onload="init();">
-    <div class="sidebar">
-        <div class="logo_content">
-            <div class="logo">
-                <i class='bx bxl-c-plus-plus'></i>
-                <div class="logo_name">LongNguyen</div>
-            </div>
-            <i class='bx bx-menu' id="btn"></i>
-        </div>
-        <ul class="nav_list">
-            <li>
-                <i class='bx bx-search' ></i>
-                <input type="text" placeholder="Search...">
-                <span class="tooltip">Search</span>
-            </li>
-            <li>
-                <a href="#">
-                    <i class='bx bx-grid-alt' ></i>
-                    <span class="links_name">Dashboard</span>
-                </a>
-                <span class="tooltip">Dashboard</span>
-            </li>
-            <li>
-                <a href="#">
-                    <i class='bx bx-user'></i>
-                    <span class="links_name">User</span>
-                </a>
-                <span class="tooltip">User</span>
-            </li>
-            <li>
-                <a href="#">
-                    <i class='bx bx-chat' ></i>
-                    <span class="links_name">Messages</span>
-                </a>
-                <span class="tooltip">Messages</span>
-            </li>
-            <li>
-                <a href="#">
-                    <i class='bx bx-pie-chart-alt-2' ></i>
-                    <span class="links_name">Analytics</span>
-                </a>
-                <span class="tooltip">Analytics</span>
-            </li>
-            <li>
-                <a href="#">
-                    <i class='bx bx-folder' ></i>
-                    <span class="links_name">File Manager</span>
-                </a>
-                <span class="tooltip">Files</span>
-            </li>
-            <li>
-                <a href="#">
-                    <i class='bx bx-cart-alt' ></i>
-                    <span class="links_name">Order</span>
-                </a>
-                <span class="tooltip">Order</span>
-            </li>
-            <li>
-                <a href="#">
-                    <i class='bx bx-heart' ></i>
-                    <span class="links_name">Saved</span>
-                </a>
-                <span class="tooltip">Saved</span>
-            </li>
-            <li>
-                <a href="#">
-                    <i class='bx bx-cog' ></i>
-                    <span class="links_name">Settings</span>
-                </a>
-                <span class="tooltip">Settings</span>
-            </li>
-        </ul>
-        <div class="profile_content">
-            <div class="profile">
-                <div class="profile_details">
-                    <img src="./football-no-background.png" alt="">
-                     <div class="name_job">
-                        <div class="name">LongNguyen</div>
-                        <div class="job">Developer</div>
-                     </div>
+<body>
+    <nav class="sidebar close">
+        <header>
+            <div class="image-text">
+                <span class="image">
+                    <img src="./lavalshy2002.jpg" alt="logo">
+                </span>
+
+                <div class="text header-text">
+                    <span class="name">Lavalshy</span>
+                    <span class="profession">Developer</span>
                 </div>
-                <i class='bx bx-log-out' id="log_out"></i>
+            </div>
+
+            <i class='bx bx-chevron-right toggle'></i>
+        </header>
+
+        <div class="menu-bar">
+            <div class="menu">
+                <li class="search-box">
+                        <i class='bx bx-search icon'></i>
+                        <input type="search" placeholder="Search...">
+                </li>
+                <ul class="menu-links">
+                    <li class="nav-link">
+                        <a href="#">
+                            <i class='bx bx-home-alt icon'></i>
+                            <span class="text nav-text">Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-link">
+                        <a href="#">
+                            <i class='bx bx-bar-chart-alt-2 icon'></i>
+                            <span class="text nav-text">Revenue</span>
+                        </a>
+                    </li>
+                    <li class="nav-link">
+                        <a href="#">
+                            <i class='bx bx-bell icon'></i>
+                            <span class="text nav-text">Notifications</span>
+                        </a>
+                    </li>
+                    <li class="nav-link">
+                        <a href="#">
+                            <i class='bx bx-pie-chart-alt icon'></i>
+                            <span class="text nav-text">Analytics</span>
+                        </a>
+                    </li>
+                    <li class="nav-link">
+                        <a href="#">
+                            <i class='bx bx-heart icon'></i>
+                            <span class="text nav-text">Likes</span>
+                        </a>
+                    </li>
+                    <li class="nav-link">
+                        <a href="#">
+                            <i class='bx bx-wallet icon'></i>
+                            <span class="text nav-text">Wallets</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="bottom-content">
+                <li class="">
+                    <a href="#">
+                        <i class='bx bx-log-out icon'></i>
+                        <span class="text nav-text">Logout</span>
+                    </a>
+                </li>
+
+                <li class="mode">
+                    <div class="moon-sun">
+                        <i class="bx bx-moon icon moon"></i>
+                        <i class="bx bx-sun icon sun"></i>
+                    </div>
+                    <span class="mode-text text">Dark Mode</span>
+
+                    <div class="toggle-switch">
+                        <span class="switch"></span>
+                    </div>
+                </li>
+
             </div>
         </div>
-    </div>
-        <canvas id="gameCanvas"></canvas>
+    </nav>
 
-    <script src="game.js"></script>
+    <section class="home">
+        <div class="text">Dashboard</div>
+    </section>
+
     <script>
-        let btn = document.querySelector("#btn");
-        let sidebar = document.querySelector(".sidebar");
-        let searchBtn = document.querySelector(".bx-search");
+    const body = document.querySelector("body"),
+          sidebar = body.querySelector(".sidebar"),
+          toggle = body.querySelector(".toggle"),
+          searchBtn = body.querySelector(".search-box"),
+          toggleSwitch = body.querySelector(".toggle-switch"),
+          modeText = body.querySelector(".mode-text");
 
-        btn.onclick = function() {
-            sidebar.classList.toggle("active");
-            resizeCanvas();
-        }
-        searchBtn.onclick = function() {
-            sidebar.classList.toggle("active");
-            resizeCanvas();
-        }
+          toggle.addEventListener("click", () => {
+              sidebar.classList.toggle("close");
+          });
+
+          searchBtn.addEventListener("click", () => {
+            sidebar.classList.remove("close");
+          })
+
+          toggleSwitch.addEventListener("click", () => {
+            body.classList.toggle("dark");
+
+            if (body.classList.contains("dark")) {
+                modeText.innerText = "Light Mode";
+            } else {
+                modeText.innerText = "Dark Mode"
+            }
+          })
     </script>
 </body>
 </html>
