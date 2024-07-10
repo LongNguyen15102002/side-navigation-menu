@@ -16,6 +16,8 @@
     --primary-color-light: #f6f5ff;
     --toggle-color: #ddd;
     --text-color: #707070;
+    --canvas-bg-color:#fff;
+    --canvas-border-color:#000;
 
     /* Transition */
     --tran-02: all 0.2s ease;
@@ -37,6 +39,8 @@ body.dark {
     --primary-color-light: #3a3b3c;
     --toggle-color: #fff;
     --text-color: #ccc;
+    --canvas-bg-color: #000;
+    --canvas-border-color: #fff;
 }
 
 /* ======= Side bar ======= */
@@ -268,23 +272,22 @@ body.dark .switch::before {
     left: 24px;
 }
 
-.home {
-    position: relative;
-    left: 250px;
-    height: 100vh;
-    width: calc(100% - 250px);
-    background: var(--body-color);
+#gameCanvas {
+    position: absolute;
+    top: 0;
+    left: 88px;
+    height: 100%;
     transition: var(--tran-05);
 }
 
-.home .text {
-    font-size: 30px;
-    font-weight: 500;
-    color: var(--text-color);
-    padding: 8px 40px;
+body:not(.dark) .sidebar:not(.close) ~ #gameCanvas,
+body.dark .sidebar:not(.close) ~ #gameCanvas {
+    left: 250px;
+    width: calc(100% - 250px);
 }
 
-.sidebar.close ~ .home {
+body:not(.dark) .sidebar.close ~ #gameCanvas,
+body.dark .sidebar.close ~ #gameCanvas {
     left: 88px;
     width: calc(100% - 88px);
 }

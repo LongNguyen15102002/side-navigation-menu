@@ -7,7 +7,7 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body onload="init()">
     <nav class="sidebar close">
         <header>
             <div class="image-text">
@@ -93,10 +93,10 @@
             </div>
         </div>
     </nav>
+    
+    <canvas id="gameCanvas"></canvas>
 
-    <section class="home">
-        <div class="text">Dashboard</div>
-    </section>
+    <script src="game.js"></script>
 
     <script>
     const body = document.querySelector("body"),
@@ -106,23 +106,30 @@
           toggleSwitch = body.querySelector(".toggle-switch"),
           modeText = body.querySelector(".mode-text");
 
-          toggle.addEventListener("click", () => {
-              sidebar.classList.toggle("close");
-          });
+          toggle.onclick = function () {
+            sidebar.classList.toggle("close");
+            resizeCanvas();
+          }
 
-          searchBtn.addEventListener("click", () => {
+          searchBtn.onclick = function () {
             sidebar.classList.remove("close");
-          })
+            resizeCanvas();
+          }
 
           toggleSwitch.addEventListener("click", () => {
-            body.classList.toggle("dark");
-
-            if (body.classList.contains("dark")) {
+            const isDarkMode = body.classList.toggle("dark");
+    
+            if (isDarkMode) {
+                setDayNight('night');
                 modeText.innerText = "Light Mode";
             } else {
-                modeText.innerText = "Dark Mode"
+                setDayNight('day');
+                modeText.innerText = "Dark Mode";
             }
-          })
+
+            // Update canvas colors to match the new mode
+            resizeCanvas();
+});
     </script>
 </body>
 </html>

@@ -108,6 +108,7 @@ function init(){
 
     // Setup canvas dimensions
     resizeCanvas();
+    setDayNight(document.body.classList.contains('dark') ? 'night' : 'day'); // Set initial mode
 
     // Set ball spawn position
     ballPositionSpawn();
@@ -129,13 +130,24 @@ function init(){
     animate();
 }
 
+// function updateCanvasColors() {
+//     const canvas = document.getElementById('gameCanvas');
+//     if (document.body.classList.contains('dark')) {
+//         canvas.style.backgroundColor = '#000000';
+//         canvas.style.borderColor = '#ffffff';
+//     } else {
+//         canvas.style.backgroundColor = '#ffffff';
+//         canvas.style.borderColor = '#000000';
+//     }
+// }
+
 //Updated part - resize Canvas function
 function resizeCanvas() {
     var oldCanvasW = canvasW;
     var oldCanvasH = canvasH;
 
     let sidebar = document.querySelector('.sidebar');
-    let sidebarWidth = sidebar.classList.contains('active') ? 240 : 78;
+    let sidebarWidth = sidebar.classList.contains('close') ? 88 : 250;
 
     canvas.width = window.innerWidth - sidebarWidth;
     canvas.height = window.innerHeight;
@@ -144,7 +156,7 @@ function resizeCanvas() {
     canvasCX = canvasW / 2;
     canvasCY = canvasH / 2;
     spike.count = canvasW / spike.width ;
-    
+
     if (oldCanvasW && oldCanvasH) {
         ballData.posX = (ballData.posX / oldCanvasW) * canvasW;
         ballData.posY = (ballData.posY / oldCanvasH) * canvasH;
@@ -553,11 +565,10 @@ function popupRender(type) {
 // Lazy popup and style formatting code
 function popupDrawStart() {
     rotationSpeed = 0;
-    setDayNight('day');
-    context.fillStyle = game.dayColor;
+    context.fillStyle = document.body.classList.contains('dark') ? '#000000' : '#ffffff';
     context.fillRect(0, 0, canvasW, canvasH);
     context.font = 'bold ' + scaleValue(64) + 'px Pusab, sans-serif';
-    context.fillStyle = game.nightColor;
+    context.fillStyle = document.body.classList.contains('dark') ? '#ffffff' : '#000000';
     context.textAlign = 'center';
     context.fillText('BALL JUGGLING', canvasCX, canvasCY - scaleValue(120));
     context.font = 'bold ' + scaleFontSize(34) + 'px Pusab, sans-serif';
@@ -568,10 +579,10 @@ function popupDrawStart() {
 
 function popupDrawRestart() {
     rotationSpeed = 0;
-    context.fillStyle = game.nightColor;
+    context.fillStyle = document.body.classList.contains('dark') ? '#000000' : '#ffffff';
     context.fillRect(0, 0, canvasW, canvasH);
     context.font = scaleFontSize(48) + 'px Pusab, sans-serif';
-    context.fillStyle = game.dayColor;
+    context.fillStyle = document.body.classList.contains('dark') ? '#ffffff' : '#000000';
     context.textAlign = 'center';
     context.fillText('YOU DID', canvasCX, canvasCY - scaleValue(120));
     context.font = 'bold ' + scaleFontSize(48) + 'px Pusab, sans-serif';
@@ -586,23 +597,27 @@ function popupDrawRestart() {
     game.message = getRandomMessage(game.juggle);
 }
 
-// Reversing scene colors
-function setDayNight(dayNight) {
-    if(dayNight == 'night') {
-        document.body.style.background = game.nightColor;
-        document.getElementsByTagName('canvas')[0].style.borderColor = game.dayColor;
-        game.scoreBoard.color = game.nightColor;
-        game.scoreBoard.background = game.dayColor;
-        ballData.color = game.dayColor;
-        spike.color = game.dayColor;
-    }
-    else {
-        document.body.style.background = game.dayColor;
-        document.getElementsByTagName('canvas')[0].style.borderColor = game.nightColor;
-        game.scoreBoard.color = game.dayColor;
-        game.scoreBoard.background = game.nightColor;
-        ballData.color = game.nightColor;
-        spike.color = game.nightColor;
+// Reverse Dark or Light Mode
+function setDayNight(mode) {
+    const body = document.body;
+    const canvas = document.getElementById('gameCanvas');
+    
+    if (mode === 'night') {
+        body.classList.add('dark');
+        canvas.style.backgroundColor = '#000000';
+        canvas.style.borderColor = '#ffffff';
+        game.scoreBoard.color = '#ffffff';
+        game.scoreBoard.background = '#000000';
+        ballData.color = '#ffffff';
+        spike.color = '#ffffff';
+    } else {
+        body.classList.remove('dark');
+        canvas.style.backgroundColor = '#ffffff';
+        canvas.style.borderColor = '#000000';
+        game.scoreBoard.color = '#000000';
+        game.scoreBoard.background = '#ffffff';
+        ballData.color = '#000000';
+        spike.color = '#000000';
     }
 }
 
